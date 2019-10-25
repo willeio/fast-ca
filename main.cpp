@@ -5,7 +5,7 @@
 #include <botan/pk_keys.h>
 #include <botan/bigint.h>
 #include <botan/auto_rng.h>
-#include <botan/pubkey.h> // bug: botan 2.12.1 does a sizeof for (unknown) PK_Signer when using X509CA
+#include <botan/pubkey.h> // bug: botan 2.12.1 does a sizeof for (undefined) PK_Signer when using X509CA
 #include <botan/pkcs8.h>
 
 #include <sys/stat.h> // mkdir
@@ -13,7 +13,8 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <unistd.h> // grr..
+#include <unistd.h> // grr.. not portable
+#include <iostream>
 
 
 using namespace Botan;
@@ -22,74 +23,78 @@ using namespace Botan;
 int main(int argc, char **argv)
 {
   puts("fast-ca");
-
-
-#warning TODO: !
-  std::string pwd = "test123"; 
-
-
+  std::string pwd;
 
   if (access("ca.crt", F_OK) == -1)
   {
+    // if there is no ca.crt, fast-ca hasn't created the CA yet, generate it:
+    puts("No CA found - creating new CA");
+
     AutoSeeded_RNG rng;
 
-    puts("creating root keys ...");
+    puts("Creating root keys ...");
     RSA_PrivateKey rootCertPrivKey(rng, 4096);
 
 
-    std::vector<uint8_t> rootCertPrivKeyData = PKCS8::BER_encode(rootCertPrivKey, rng, pwd);//, "PBES2(CIPHER,PBKDF)");
+    // ask for a password to encrypt the private key for the CA
+    bool askForPwd = true;
+    while (askForPwd)
+    {
+      printf("> Enter a secure password for encrypting the CA's private keys: ");
+      std::cin >> pwd;
 
-    FILE *f = fopen("./ca.pem", "w");
+      if (pwd.length() < 3)
+        puts("Password too short!");        
+      else
+        askForPwd = false;
+    }
+
+    //std::cerr << "pwd: '" << pwd << "'" << std::endl;
+
+
+    // encrypt the private key and write it to disk
+    std::vector<uint8_t> rootCertPrivKeyData = PKCS8::BER_encode(rootCertPrivKey, rng, pwd);
+    FILE *f = fopen("./ca.ber", "w");
 
     if (!f)
     {
       puts("writing root keys failed!");
       return -1;
     }
-
     
-    size_t wrote = fwrite(rootCertPrivKeyData.data(), 1, rootCertPrivKeyData.size(), f);
-
-    //printf("wrote %zu bytes\n", wrote);
-
+    fwrite(rootCertPrivKeyData.data(), 1, rootCertPrivKeyData.size(), f);
     fclose(f);
 
 
-
+    // generate the certificate from the CA's private keys, with these options:
     X509_Cert_Options opts("");
-
     opts.common_name = "fast-ca Root Certificate";
-    opts.country = "TODO";
-    //opts.dns
-    //opts.set_padding_scheme()
+    opts.add_constraints(Key_Constraints::DIGITAL_SIGNATURE);
+    opts.add_ex_constraint("PKIX.ServerAuth");
+    opts.add_ex_constraint("PKIX.ClientAuth");
     opts.CA_key(1);
 
-    puts("creating root certificate ...");
+    puts("Creating root certificate ...");
     X509_Certificate rootCert = X509::create_self_signed_cert(opts, rootCertPrivKey, "SHA-256", rng);
 
-
-    puts("writing root certificate ...");
-    std::vector<uint8_t> rootCertData(rootCert.BER_encode());
-
-
+    puts("Writing root certificate ...");
+    std::string rootCertData(rootCert.PEM_encode());
     f = fopen("./ca.crt", "w");
 
     if (!f)
     {
-      puts("writing ca certificate failed!");
+      puts("Writing CA certificate failed!");
       return -1;
     }
 
-    //size_t wrote = 
     fwrite(rootCertData.data(), 1, rootCertData.size(), f);
-
-    //printf("wrote %zu bytes\n", wrote);
-
     fclose(f);
-
     puts("CA initialized");
   }
-  
+  else
+  {
+    puts("CA available");
+  }
 
 
   if (argc < 2)
@@ -98,98 +103,113 @@ int main(int argc, char **argv)
     return -1;
   }
 
-
   
-  puts("loading ca certificate ...");
+  puts("Loading CA certificate ...");
   X509_Certificate caCert = X509_Certificate("./ca.crt");
-
   AutoSeeded_RNG rng;
-  puts("loading ca keys ...");
-  Private_Key *caPrivKey = PKCS8::load_key("./ca.pem", rng, pwd);
 
 
-  puts("initializing ca ...");
+  puts("Loading CA keys ...");
+  Private_Key *caPrivKey = nullptr;
+
+  bool askForPwd = pwd.empty(); // only ask for the password if the user didn't enter it yet
+  while (askForPwd)
+  {
+    printf("> Enter the CA's private key's password: ");
+    std::cin >> pwd;
+    //std::cerr << "pwd: '" << pwd << "'" << std::endl;
+
+    if (pwd.length() < 3)
+      puts("Password too short!");        
+    else
+    {
+      try
+      {
+        caPrivKey = PKCS8::load_key("./ca.ber", rng, pwd);
+      }
+      catch(...)
+      {
+        puts("CA keys couldn't be unlocked with the given password!");
+        continue;
+      }
+
+      askForPwd = false;
+    }
+  }
+
+  if (!askForPwd)
+  {
+    try
+    {
+      caPrivKey = PKCS8::load_key("./ca.ber", rng, pwd);
+    }
+    catch(...)
+    {
+      puts("CA keys couldn't be unlocked with the given password!");
+      return -1;
+    }
+  }
+
+
+  puts("Initializing CA ...");
   X509_CA ca = X509_CA(caCert, *caPrivKey, "SHA-256", rng);
-
   // TODO: free caPrivKey
 
 
-  puts("creating client keys ...");
+  puts("Creating client keys ...");
   RSA_PrivateKey privKey = RSA_PrivateKey(rng, 4096);
-
-
-
-
   std::string fqdn(argv[1]);
-
-  secure_vector<uint8_t> privKeyData = PKCS8::BER_encode(privKey);
-
+  std::string privKeyData = PKCS8::PEM_encode(privKey);
   int status = mkdir(argv[1], S_IRWXU | S_IRWXG);
-  printf("mkdir status: %d\n", status);
+  
+  if (status == -1)
+  {
+    puts("Could not create directory for client certificate!");
+    return -1;
+  }
 
   std::string privKeyDataPath("./" + fqdn + "/" + fqdn + ".pem");
   FILE *f = fopen(privKeyDataPath.c_str(), "w");
 
   if (!f)
   {
-    puts("writing client keys failed!");
+    puts("Writing client keys failed!");
     return -1;
   }
   
-  puts("writing client keys ...");
-  size_t wrote = fwrite(privKeyData.data(), 1, privKeyData.size(), f);
-
-  //printf("wrote %zu bytes\n", wrote);
-
+  puts("Writing client keys ...");
+  fwrite(privKeyData.data(), 1, privKeyData.size(), f);
   fclose(f);
 
 
-
-
-
-  puts("creating client certificate request ...");
-
-  X509_Cert_Options opts("");
-  
-  // TODO: !
-  opts.common_name = "TODO";
-  opts.country = "TODO";
-  opts.dns = "test.wille.io";
-
+  puts("Creating client certificate request ...");
+  X509_Cert_Options opts("");  
+  opts.common_name = fqdn;
+  opts.dns = fqdn;
+  opts.add_constraints(Key_Constraints::DIGITAL_SIGNATURE);
+  opts.add_ex_constraint("PKIX.ServerAuth");
+  opts.add_ex_constraint("PKIX.ClientAuth");
   PKCS10_Request request = X509::create_cert_req(opts, privKey, "SHA-256", rng);
 
 
   std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-
-
-  puts("creating client certificate ...");
+  puts("Creating client certificate ...");
   X509_Certificate cert = ca.sign_request(request, rng, X509_Time(now), 
-                          X509_Time(now + std::chrono::hours(8760)));
-  std::vector<uint8_t> certData = cert.BER_encode();
-
-
-
+                          X509_Time(now + std::chrono::hours(8760))); // create a certificate that is valid from now, for one year (8760 hours)
+  std::string certData = cert.PEM_encode();
   std::string certDataPath("./" + fqdn + "/" + fqdn + ".crt");
   f = fopen(certDataPath.c_str(), "w");
 
   if (!f)
   {
-    puts("writing client certificate failed!");
+    puts("Writing client certificate failed!");
     return -1;
   }
   
-  puts("writing client certificate ...");
-  wrote = fwrite(certData.data(), 1, certData.size(), f);
-
-  //printf("wrote %zu bytes\n", wrote);
-
-  fclose(f);                        
-
-
-  puts("done!");
-
-
-
+  puts("Writing client certificate ...");
+  fwrite(certData.data(), 1, certData.size(), f);
+  fclose(f);
+  puts("Done!");
 
   return 0;
 }
