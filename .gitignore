@@ -1,4 +1,4 @@
-fastca
+/build
 *.crt
 *.pem
 *.ber
