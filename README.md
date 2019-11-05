@@ -17,10 +17,13 @@ Common name and the DNS field are set to the FQDN, making the generated certific
 ### Installation
 
 fast-ca requires [botan-2](https://botan.randombit.net/) to compile & run.
-Use the one-line compilation script to generate the fast-ca executable:
+Use cmake to generate the fast-ca executable:
 
 ```sh
-$ ./compile.sh
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
 ```
 
 ### Usage
