@@ -17,13 +17,28 @@ Common name and the DNS field are set to the FQDN, making the generated certific
 ### Installation
 
 fast-ca requires [botan-2](https://botan.randombit.net/) to compile & run.
-Use cmake to generate the fast-ca executable:
+
+Install botan-2:
+
+Ubuntu:
+```sh
+$ sudo apt install libbotan-2-dev
+```
+
+Fedora:
+```sh
+$ sudo dnf install botan2-devel
+```
+
+
+Use cmake to generate the fast-ca executable & install it on your system:
 
 ```sh
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make
+$ sudo make install
 ```
 
 ### Usage
