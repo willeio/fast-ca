@@ -7,10 +7,9 @@ jobs:
     runs-on: ubuntu-18.04
     
     steps:
+      - uses: actions/checkout@v1
       - name: apt install
         run: sudo apt install libbotan-2-dev
-      - name: tell me where i am
-        run: ls
       - name: cmake
         run: mkdir build && cd build && cmake ..
       - name: build
