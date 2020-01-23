@@ -10,7 +10,7 @@ jobs:
       - name: apt install
         run: sudo apt install libbotan-2-dev
       - name: cmake
-        run: cmake -E build
+        run: mkdir build && cd build && cmake ..
       - name: build
         run: make
     
