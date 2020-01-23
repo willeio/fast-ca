@@ -8,7 +8,7 @@ jobs:
     
     steps:
       - name: apt install
-        run: apt install libbotan-2-dev
+        run: sudo apt install libbotan-2-dev
       - name: make build dir
         run: mkdir build
       - name: cd build dir
