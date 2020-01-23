@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: apt install
         run: sudo apt install libbotan-2-dev
+      - name: tell me where i am
+        run: ls
       - name: cmake
         run: mkdir build && cd build && cmake ..
       - name: build
