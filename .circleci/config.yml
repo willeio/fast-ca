@@ -24,13 +24,13 @@ commands:
     description: update & get project dependencies / packagesfor ubuntu:latest (lts)
     steps:
     - run:
-        command: apt update
+        command: apt-get update
         name: update
     - run:
-        command: timedatectl set-timezone Europe/Berlin
+        command: ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime && echo Europe/Berlin > /etc/timezone
         name: prepare apt / set timezone
     - run:
-        command: apt install -y build-essential cmake libbotan-2-dev
+        command: apt-get install -y build-essential cmake libbotan-2-dev
         name: install deps
         
   cmake-build:
