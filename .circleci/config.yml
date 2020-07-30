@@ -5,11 +5,19 @@ jobs:
     docker:
     - image: fedora:latest
     steps:
+    - checkout
     - run: 
         command: "sudo dnf update -y"
         name: update
     - run:
         command: "sudo dnf install -y gcc gcc-c++ cmake botan2-devel"
+        name: install deps
+    - run:
+        command: |
+          mkdir build
+          cd build
+          cmake --build ..
+        name: build
 
 workflows:
   build:
