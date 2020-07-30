@@ -1,7 +1,7 @@
 version: 2.1
 
 executors:
-  ex-fedora-lastest:
+  ex-fedora-latest:
     docker:
       - image: fedora:latest
   ex-ubuntu-latest:
@@ -52,8 +52,8 @@ commands:
        
 
 jobs:
-  build-fedora-lastest:
-    executor: ex-fedora-lastest    
+  build-fedora-latest:
+    executor: ex-fedora-latest    
     steps:
     - checkout
     - fedora-latest-get-deps
@@ -66,8 +66,8 @@ jobs:
     - test-fastca
     
     
-  build-ubuntu-lastest:
-    executor: ex-ubuntu-lastest    
+  build-ubuntu-latest:
+    executor: ex-ubuntu-latest    
     steps:
     - checkout
     - ubuntu-latest-get-deps
@@ -93,4 +93,5 @@ workflows:
     - test-ubuntu-latest:
         requires:
           - build-ubuntu-latest
+  
   version: 2
