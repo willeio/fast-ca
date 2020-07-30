@@ -73,7 +73,7 @@ jobs:
     - ubuntu-latest-get-deps
     - cmake-build
         
-  test-fedora-latest:
+  test-ubuntu-latest:
     executor: ex-ubuntu-latest
     steps:
     - ubuntu-latest-get-deps
