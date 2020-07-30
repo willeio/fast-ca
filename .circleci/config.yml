@@ -21,6 +21,9 @@ jobs:
           cmake -S . -B build
           cmake --build build
         name: build
+    - persist_to_workspace: #(6)
+        root: .
+        paths: build
         
   test:
     executor: ex
