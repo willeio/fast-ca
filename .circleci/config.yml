@@ -47,6 +47,7 @@ commands:
     steps:
     - run:
        command: |
+         mkdir build
          cmake -S . -B build
          cmake --build build
        name: build
