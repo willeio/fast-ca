@@ -14,9 +14,8 @@ jobs:
         name: install deps
     - run:
         command: |
-          mkdir build
-          cd build
-          cmake --build ..
+          cmake -S . -B build
+          cmake --build build
         name: build
 
 workflows:
