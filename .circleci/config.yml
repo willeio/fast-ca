@@ -6,7 +6,7 @@ jobs:
     - image: fedora:latest
     steps:
     - run: 
-        command: "sudo dnf update | true"
+        command: "sudo dnf update -y"
         name: update
     - run:
         command: "sudo dnf install -y gcc gcc-c++ cmake botan2-devel"
