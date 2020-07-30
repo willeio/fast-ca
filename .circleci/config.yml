@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build/run:
+  build:
     docker:
     - image: fedora:latest
     steps:
@@ -12,5 +12,5 @@ jobs:
 workflows:
   build:
     jobs:
-    - build/run
+    - build
   version: 2
