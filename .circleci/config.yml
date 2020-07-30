@@ -1,13 +1,17 @@
 version: 2.1
 
 executors:
-  ex:
+  ex-fedora-lastest:
     docker:
       - image: fedora:latest
+  ex-ubuntu-latest:
+    docker:
+      - image: ubuntu:latest
+
 
 commands:
-  get-deps:
-    description: update & get project dependencies / packages
+  fedora-latest-get-deps:
+    description: update & get project dependencies / packages for fedora:latest
     steps:
     - run: 
         command: sudo dnf update -y
@@ -15,37 +19,78 @@ commands:
     - run:
         command: sudo dnf install -y gcc gcc-c++ cmake make botan2-devel
         name: install deps
-    
-
-jobs:
-  build:
-    executor: ex    
+        
+  ubuntu-latest-get-deps:
+    description: update & get project dependencies / packagesfor ubuntu:latest (lts)
     steps:
-    - checkout
-    - get-deps
     - run:
+        command: sudo apt update
+        name: update
+    - run:
+        command: sudo apt install -y build-essential cmake libbotan-2-dev
+        name: install deps
+        
+   cmake-build:
+     description: build with cmake
+     steps:
+     - run:
         command: |
           cmake -S . -B build
           cmake --build build
         name: build
-    - persist_to_workspace: #(6)
+    - persist_to_workspace:
         root: .
         paths: build
         
-  test:
-    executor: ex
-    steps:
-    - get-deps
-    - attach_workspace:
-        at: .
-    - run:
-        command: echo -e "testpw\ntestpw" | build/fastca testhost
+    test-fastca:
+      description: test fastca
+      steps:      
+      - attach_workspace:
+          at: .
+      - run:
+          command: echo -e "testpw\ntestpw" | build/fastca testhost
+       
 
+jobs:
+  build-fedora-lastest:
+    executor: ex-fedora-lastest    
+    steps:
+    - checkout
+    - fedora-latest-get-deps
+    - cmake-build
+        
+  test-fedora-latest:
+    executor: ex-fedora-latest
+    steps:
+    - fedora-latest-get-deps
+    - test-fastca
+    
+    
+  build-ubuntu-lastest:
+    executor: ex-ubuntu-lastest    
+    steps:
+    - checkout
+    - ubuntu-latest-get-deps
+    - cmake-build
+        
+  test-fedora-latest:
+    executor: ex-ubuntu-latest
+    steps:
+    - ubuntu-latest-get-deps
+    - test-fastca
+    
+    
 workflows:
   build:
     jobs:
-    - build
-    - test:
+    - build-fedora-latest
+    - test-fedora-latest:
         requires:
-          - build
+          - build-fedora-latest
+          
+    
+    - build-ubuntu-latest
+    - test-ubuntu-latest:
+        requires:
+          - build-ubuntu-latest
   version: 2
