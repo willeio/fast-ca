@@ -7,7 +7,7 @@ executors:
   ex-ubuntu-latest:
     docker:
       - image: ubuntu:latest
-  ex-ubuntu-18.04:
+  ex-ubuntu-18-04:
     docker:
       - image: ubuntu:18.04
       
@@ -23,7 +23,7 @@ commands:
         command: sudo dnf install -y gcc gcc-c++ cmake make botan2-devel
         name: install deps
         
-  ubuntu-18.04-get-deps:
+  ubuntu-18-04-get-deps:
     description: update & get project dependencies / packages for ubuntu:18.04 (lts)
     steps:
     - run:
@@ -39,7 +39,7 @@ commands:
   ubuntu-latest-get-deps:
     description: update & get project dependencies / packages for ubuntu:latest (lts)
     steps:
-    - ubuntu-18.04-get-deps
+    - ubuntu-18-04-get-deps
     
         
   cmake-build:
@@ -92,17 +92,17 @@ jobs:
     - test-fastca
     
     
-  build-ubuntu-18.04:
-    executor: ex-ubuntu-18.04
+  build-ubuntu-18-04:
+    executor: ex-ubuntu-18-04
     steps:
     - checkout
-    - ubuntu-18.04-get-deps
+    - ubuntu-18-04-get-deps
     - cmake-build
         
-  test-ubuntu-18.04:
-    executor: ex-ubuntu-18.04
+  test-ubuntu-18-04:
+    executor: ex-ubuntu-18-04
     steps:
-    - ubuntu-18.04-get-deps
+    - ubuntu-18-04-get-deps
     - test-fastca
     
     
@@ -119,9 +119,9 @@ workflows:
         requires:
           - build-ubuntu-latest
           
-    - build-ubuntu-18.04
-    - test-ubuntu-18.04:
+    - build-ubuntu-18-04
+    - test-ubuntu-18-04:
         requires:
-          - build-ubuntu-18.04
+          - build-ubuntu-18-04
   
   version: 2
