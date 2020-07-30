@@ -24,10 +24,10 @@ commands:
     description: update & get project dependencies / packagesfor ubuntu:latest (lts)
     steps:
     - run:
-        command: sudo apt update
+        command: apt update
         name: update
     - run:
-        command: sudo apt install -y build-essential cmake libbotan-2-dev
+        command: apt install -y build-essential cmake libbotan-2-dev
         name: install deps
         
   cmake-build:
