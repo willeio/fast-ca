@@ -5,17 +5,24 @@ executors:
     docker:
       - image: fedora:latest
 
-jobs:
-  build:
-    executor: ex    
+commands:
+  get-deps:
+    description: update & get project dependencies / packages
     steps:
-    - checkout
     - run: 
         command: sudo dnf update -y
         name: update
     - run:
         command: sudo dnf install -y gcc gcc-c++ cmake make botan2-devel
         name: install deps
+    
+
+jobs:
+  build:
+    executor: ex    
+    steps:
+    - checkout
+    - get-deps
     - run:
         command: |
           cmake -S . -B build
@@ -28,6 +35,7 @@ jobs:
   test:
     executor: ex
     steps:
+    - get-deps
     - attach_workspace:
         at: .
     - run:
