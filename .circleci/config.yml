@@ -7,7 +7,10 @@ executors:
   ex-ubuntu-latest:
     docker:
       - image: ubuntu:latest
-
+  ex-ubuntu-18.04:
+    docker:
+      - image: ubuntu:18.04
+      
 
 commands:
   fedora-latest-get-deps:
@@ -20,8 +23,8 @@ commands:
         command: sudo dnf install -y gcc gcc-c++ cmake make botan2-devel
         name: install deps
         
-  ubuntu-latest-get-deps:
-    description: update & get project dependencies / packagesfor ubuntu:latest (lts)
+  ubuntu-18.04-get-deps:
+    description: update & get project dependencies / packages for ubuntu:18.04 (lts)
     steps:
     - run:
         command: apt-get update
@@ -32,6 +35,12 @@ commands:
     - run:
         command: apt-get install -y build-essential cmake libbotan-2-dev
         name: install deps
+        
+  ubuntu-latest-get-deps:
+    description: update & get project dependencies / packages for ubuntu:latest (lts)
+    steps:
+    - ubuntu-18.04-get-deps
+    
         
   cmake-build:
     description: build with cmake
@@ -80,6 +89,20 @@ jobs:
     executor: ex-ubuntu-latest
     steps:
     - ubuntu-latest-get-deps
+    - test-fastca
+    
+    
+  build-ubuntu-18.04:
+    executor: ex-ubuntu-18.04
+    steps:
+    - checkout
+    - ubuntu-18.04-get-deps
+    - cmake-build
+        
+  test-ubuntu-latest:
+    executor: ex-ubuntu-18.04
+    steps:
+    - ubuntu-18.04-get-deps
     - test-fastca
     
     
