@@ -99,7 +99,7 @@ jobs:
     - ubuntu-18.04-get-deps
     - cmake-build
         
-  test-ubuntu-latest:
+  test-ubuntu-18.04:
     executor: ex-ubuntu-18.04
     steps:
     - ubuntu-18.04-get-deps
@@ -113,11 +113,15 @@ workflows:
     - test-fedora-latest:
         requires:
           - build-fedora-latest
-          
     
     - build-ubuntu-latest
     - test-ubuntu-latest:
         requires:
           - build-ubuntu-latest
+          
+    - build-ubuntu-18.04
+    - test-ubuntu-18.04:
+        requires:
+          - build-ubuntu-18.04
   
   version: 2
