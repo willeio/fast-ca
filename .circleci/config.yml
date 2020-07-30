@@ -1,9 +1,13 @@
 version: 2.1
 
+executors:
+  ex:
+    docker:
+      - image: fedora:latest
+
 jobs:
   build:
-    docker:
-    - image: fedora:latest
+    executor: ex    
     steps:
     - checkout
     - run: 
@@ -19,6 +23,7 @@ jobs:
         name: build
         
   test:
+    executor: ex
     steps:
     - attach_workspace:
         at: .
