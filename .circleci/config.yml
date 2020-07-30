@@ -27,6 +27,9 @@ commands:
         command: apt update
         name: update
     - run:
+        command: timedatectl set-timezone Europe/Berlin
+        name: prepare apt / set timezone
+    - run:
         command: apt install -y build-essential cmake libbotan-2-dev
         name: install deps
         
