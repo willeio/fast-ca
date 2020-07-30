@@ -7,19 +7,25 @@ jobs:
     steps:
     - checkout
     - run: 
-        command: "sudo dnf update -y"
+        command: sudo dnf update -y
         name: update
     - run:
-        command: "sudo dnf install -y gcc gcc-c++ cmake make botan2-devel"
+        command: sudo dnf install -y gcc gcc-c++ cmake make botan2-devel
         name: install deps
     - run:
         command: |
           cmake -S . -B build
           cmake --build build
         name: build
+        
+  test:
+    steps:
+    - run:
+        command: echo -e "testpw\ntestpw" | build/fastca testhost
 
 workflows:
   build:
     jobs:
     - build
+    - test
   version: 2
