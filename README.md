@@ -1,7 +1,7 @@
 ![fast-ca logo](https://wille.io/fast-ca.png "fast-ca logo")
 # fast-ca
 
-test.
+test..
 
 fast-ca is a minimalistic tool to create a local certificate authority and signed certificates in one simple command.
 Use fast-ca to ... :
