@@ -1,5 +1,7 @@
-![fast-ca logo](https://wille.io/fast-ca.png "fast-ca logo")
+![fast-ca logo](https://wille.io/fast-ca.png)
 # fast-ca
+
+Jenkins sez: [![Jenkins Build Status](https://wille.io/jenkins/job/fast-ca/badge/icon)](https://wille.io/jenkins/job/fast-ca/)
 
 test...
 
