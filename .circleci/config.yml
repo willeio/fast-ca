@@ -55,6 +55,22 @@ commands:
         root: .
         paths: build
         
+        
+  cmake-build-old:
+    description: build with cmake (old way)
+    steps:
+    - run:
+       command: |
+         mkdir build
+         cd build
+         cmake ..
+         make
+       name: build
+    - persist_to_workspace:
+        root: .
+        paths: build
+        
+        
   test-fastca:
     description: test fastca
     steps:      
@@ -98,7 +114,7 @@ jobs:
     steps:
     - checkout
     - ubuntu-18-04-get-deps
-    - cmake-build
+    - cmake-build-old
         
   test-ubuntu-18-04:
     executor: ex-ubuntu-18-04
