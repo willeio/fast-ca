@@ -3,7 +3,7 @@
 
 Jenkins sez: [![Jenkins Build Status](https://wille.io/jenkins/job/fast-ca/badge/icon)](https://wille.io/jenkins/job/fast-ca/)
 
-test....
+test.....
 
 fast-ca is a minimalistic tool to create a local certificate authority and signed certificates in one simple command.
 Use fast-ca to ... :
